@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Scope;
 use Illuminate\Support\Str;
+use VentureDrake\LaravelCrm\Support\TeamResolution;
 
 class BelongsToTeamsScope implements Scope
 {
@@ -70,17 +71,17 @@ class BelongsToTeamsScope implements Scope
 
     public function apply(Builder $builder, Model $model)
     {
-        if (config('laravel-crm.teams') && auth()->hasUser() && auth()->user()->currentTeam) {
+        if (config('laravel-crm.teams') && ($teamId = TeamResolution::currentTeamId()) !== null) {
             if (self::appliesToRequest()) {
                 $this->extend($builder);
 
                 if (in_array($model->getTable(), config('laravel-crm.model_with_global'))) {
-                    $builder->where(function ($query) use ($model) {
-                        $query->orWhere($model->getTable().'.team_id', auth()->user()->currentTeam->id)
+                    $builder->where(function ($query) use ($model, $teamId) {
+                        $query->orWhere($model->getTable().'.team_id', $teamId)
                             ->orWhere($model->getTable().'.global', 1);
                     });
                 } else {
-                    $builder->where($model->getTable().'.team_id', auth()->user()->currentTeam->id);
+                    $builder->where($model->getTable().'.team_id', $teamId);
                 }
             }
         }

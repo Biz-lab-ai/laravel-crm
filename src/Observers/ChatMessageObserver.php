@@ -23,7 +23,7 @@ class ChatMessageObserver
         // Broadcast (no-op if broadcasting driver isn't configured)
         try {
             event(new ChatMessageSent($message));
-        } catch (\Throwable $e) {
+        } catch (\Throwable $e) { // nosemgrep: semgrep.rules.php-empty-catch -- upstream 2.4.7 debt, README-FORK
             // swallow — chat still works without broadcasting
         }
     }

@@ -152,7 +152,7 @@ class PurchaseOrderService
                     'purchase_order_id' => $purchaseOrder->id,
                     'status' => $xeroPurchaseOrder['body']['PurchaseOrders'][0]['Status'],
                 ]);
-            } catch (Exception $e) {
+            } catch (Exception $e) { // nosemgrep: semgrep.rules.php-empty-catch -- upstream 2.4.7 debt, README-FORK
                 //
             }
         }

@@ -80,7 +80,7 @@ class HostTeamController extends Controller
     protected function buildAttributes(string $teamClass, string $name): array
     {
         $attributes = ['name' => $name];
-        $model = new $teamClass;
+        $model = app($teamClass);
         $table = $model->getTable();
 
         if (Schema::hasColumn($table, 'personal_team')) {
@@ -92,7 +92,7 @@ class HostTeamController extends Controller
 
     protected function ownerColumn(string $teamClass): ?string
     {
-        $model = new $teamClass;
+        $model = app($teamClass);
         $table = $model->getTable();
 
         foreach (['user_id', 'owner_id', 'created_by'] as $candidate) {

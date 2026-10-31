@@ -1,5 +1,6 @@
 {
     "name": "venturedrake/laravel-crm",
+    "version": "2.4.7",
     "description": "A free open source CRM built as a package for laravel projects",
     "keywords": [
         "venturedrake",
@@ -36,7 +37,7 @@
     "require": {
         "php": "^8.2",
         "barryvdh/laravel-dompdf": "^3.1",
-        "cknow/laravel-money": "^7.0|^8.0",
+        "saasykit/laravel-money": "^1.1",
         "codeat3/blade-forkawesome": "^1.11",
         "doctrine/dbal": "^3.9|^4.0",
         "guzzlehttp/guzzle": "^6.0|^7.0|^8.0",
@@ -46,10 +47,9 @@
         "mallardduck/blade-boxicons": "^2.4",
         "mpdf/mpdf": "^8.0",
         "owenvoke/blade-fontawesome": "^2.8|^3.0",
-        "php-flasher/flasher-laravel": "^2.3",
         "rinvex/countries": "^8.1|^9.0",
         "robsontenorio/mary": "^1.0|^2.0",
-        "spatie/laravel-permission": "^6.0"
+        "spatie/laravel-permission": "^6.0|^7.0|^8.0"
     },
     "require-dev": {
         "dcblogdev/laravel-xero": "1.1.3",

@@ -14,6 +14,6 @@ class XeroController extends Controller
      */
     public function index()
     {
-        dd('xero integration');
+        dd('xero integration'); // nosemgrep: semgrep.rules.php-debug-helper-outside-tests -- upstream 2.4.7 debt, README-FORK
     }
 }

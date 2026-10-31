@@ -7,7 +7,7 @@
     <title>{{ (config('app.name')) ? config('app.name').' - ' : null }} CRM - Document</title>
     
     <!-- Styles -->
-    @php($crmDocumentCss = public_path('vendor/laravel-crm/css/document.css'))
+    @php($crmDocumentCss = config('laravel-crm.pdf_document_css') ?: public_path('vendor/laravel-crm/css/document.css'))
     @if(file_exists($crmDocumentCss))
         <style>{!! file_get_contents($crmDocumentCss) !!}</style>
     @else

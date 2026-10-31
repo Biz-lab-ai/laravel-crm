@@ -4,6 +4,7 @@ namespace VentureDrake\LaravelCrm\Services;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
+use VentureDrake\LaravelCrm\Contracts\GeneratesNumbers;
 
 /**
  * Generates the next sequential `number` value for a CRM model in a
@@ -25,6 +26,10 @@ class NumberGeneratorService
      */
     public static function next(string $modelClass, int $startAt = 1000, int $lockSeconds = 10, int $waitSeconds = 5): int
     {
+        if ($generator = self::boundGenerator()) {
+            return $generator->next($modelClass, $startAt, $lockSeconds, $waitSeconds);
+        }
+
         $key = 'laravel-crm:next-number:'.str_replace('\\', '_', $modelClass);
         $lockKey = $key.':lock';
         $counterKey = $key.':counter';
@@ -59,7 +64,36 @@ class NumberGeneratorService
      */
     public static function reset(string $modelClass): void
     {
+        if ($generator = self::boundGenerator()) {
+            $generator->reset($modelClass);
+
+            return;
+        }
+
         $key = 'laravel-crm:next-number:'.str_replace('\\', '_', $modelClass);
         Cache::forget($key.':counter');
+    }
+
+    /**
+     * The host-bound generator named in `laravel-crm.number_generator`, or
+     * null to keep the cache counter above.
+     */
+    protected static function boundGenerator(): ?GeneratesNumbers
+    {
+        $class = config('laravel-crm.number_generator');
+
+        if (! $class) {
+            return null;
+        }
+
+        $generator = app($class);
+
+        if (! $generator instanceof GeneratesNumbers) {
+            throw new \UnexpectedValueException(
+                'laravel-crm.number_generator must name a class implementing '.GeneratesNumbers::class.', got '.$class
+            );
+        }
+
+        return $generator;
     }
 }

@@ -64,7 +64,7 @@ trait HasEncryptableFields
     {
         try {
             $decrypted = decrypt($value);
-        } catch (DecryptException $e) {
+        } catch (DecryptException $e) { // nosemgrep: semgrep.rules.php-empty-catch -- upstream 2.4.7 debt, README-FORK
         }
 
         return $decrypted ?? $value;

@@ -125,7 +125,7 @@ class LeadController extends Controller
                         if (config('laravel-crm.encrypt_db_fields')) {
                             try {
                                 $relatedField = decrypt($record->{$field[1]});
-                            } catch (DecryptException $e) {
+                            } catch (DecryptException $e) { // nosemgrep: semgrep.rules.php-empty-catch -- upstream 2.4.7 debt, README-FORK
                             }
 
                             $relatedField = $record->{$field[1]};

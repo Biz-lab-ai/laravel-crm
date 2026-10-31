@@ -539,7 +539,9 @@ class LaravelCrmServiceProvider extends ServiceProvider
         // migrations live in database/updates and reach every host through a
         // plain `php artisan migrate`, with no publish step and no entry in the
         // (now frozen) publish array below.
-        $this->loadMigrationsFrom(__DIR__.'/../database/updates');
+        if (config('laravel-crm.load_update_migrations', true)) {
+            $this->loadMigrationsFrom(__DIR__.'/../database/updates');
+        }
 
         // Middleware
         $router->aliasMiddleware('auth.laravel-crm', Authenticate::class);
@@ -1151,7 +1153,7 @@ class LaravelCrmServiceProvider extends ServiceProvider
         Livewire::component('crm-settings-custom-field-group-edit', CustomFieldGroupEdit::class);
         Livewire::component('crm-settings-custom-field-group-show', CustomFieldGroupShow::class);
 
-        if ($this->app->runningInConsole()) {
+        if ($this->app->runningInConsole() && config('laravel-crm.schedule.enabled', true)) {
             $this->app->booted(function () {
                 $schedule = $this->app->make(Schedule::class);
 
@@ -1318,12 +1320,18 @@ class LaravelCrmServiceProvider extends ServiceProvider
 
         // API routes (v2) — JSON-only with named rate limiter
         // Mounted under the CRM route prefix (defaults to `crm/api/v2`).
-        Route::group([
-            'prefix' => trim(config('laravel-crm.route_prefix', 'crm'), '/').'/api/v2',
-            'middleware' => ['api', 'laravel-crm.api.json', 'throttle:laravel-crm-api'],
-        ], function () {
-            $this->loadRoutesFrom(__DIR__.'/Http/api-routes.php');
-        });
+        // Fork change (Biz Lab AI): the group is registered only while
+        // `laravel-crm.api.enabled` is true (default true, so upstream
+        // behaviour is unchanged) — a host that ships its own tenancy
+        // may switch the token API off until it has fenced it.
+        if (config('laravel-crm.api.enabled', true)) {
+            Route::group([
+                'prefix' => trim(config('laravel-crm.route_prefix', 'crm'), '/').'/api/v2',
+                'middleware' => ['api', 'laravel-crm.api.json', 'throttle:laravel-crm-api'],
+            ], function () {
+                $this->loadRoutesFrom(__DIR__.'/Http/api-routes.php');
+            });
+        }
     }
 
     protected function authRouteConfiguration()

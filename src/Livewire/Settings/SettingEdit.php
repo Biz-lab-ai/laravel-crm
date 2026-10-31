@@ -512,7 +512,7 @@ class SettingEdit extends Component
         // PdfLogo::src() already treats a missing file as "no logo".
         try {
             Storage::disk('public')->delete($this->logo);
-        } catch (Throwable $e) {
+        } catch (Throwable $e) { // nosemgrep: semgrep.rules.php-empty-catch -- upstream 2.4.7 debt, README-FORK
             // Intentionally swallowed — see above.
         }
 

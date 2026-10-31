@@ -4,6 +4,7 @@ namespace VentureDrake\LaravelCrm\Traits;
 
 use Illuminate\Database\Eloquent\Model;
 use VentureDrake\LaravelCrm\Scopes\BelongsToTeamsScope;
+use VentureDrake\LaravelCrm\Support\TeamResolution;
 
 /**
  * @mixin Model
@@ -20,8 +21,8 @@ trait BelongsToTeams
         static::addGlobalScope(new BelongsToTeamsScope);
 
         static::creating(function (Model $model) {
-            if (config('laravel-crm.teams') && auth()->hasUser() && auth()->user()->currentTeam && ! $model->team_id) {
-                $model->team_id = auth()->user()->currentTeam->id ?? null;
+            if (config('laravel-crm.teams') && ! $model->team_id && ($teamId = TeamResolution::currentTeamId()) !== null) {
+                $model->team_id = $teamId;
             }
         });
     }

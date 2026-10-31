@@ -336,4 +336,30 @@ return [
         'settings',
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Host integration hooks
+    |--------------------------------------------------------------------------
+    |
+    | `team_resolver` names a class implementing Contracts\ResolvesTeam that
+    | answers the current team id for team scoping and stamping; null keeps
+    | Support\CurrentUserTeamResolver (auth()->user()->currentTeam).
+    | `number_generator` names a class implementing Contracts\GeneratesNumbers;
+    | null keeps the cache counter of NumberGeneratorService.
+    | `schedule.enabled` false leaves the package's scheduled commands out of
+    | the host scheduler. Class names, never closures: `config:cache` cannot
+    | restore a closure.
+    |
+    */
+
+    'team_resolver' => env('LARAVEL_CRM_TEAM_RESOLVER'),
+
+    'number_generator' => env('LARAVEL_CRM_NUMBER_GENERATOR'),
+
+    'schedule' => [
+        'enabled' => env('LARAVEL_CRM_SCHEDULE_ENABLED', true),
+    ],
+
+    'load_update_migrations' => env('LARAVEL_CRM_LOAD_UPDATE_MIGRATIONS', true),
+
 ];

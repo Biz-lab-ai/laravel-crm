@@ -182,7 +182,7 @@ class ChatService
                 ->where('last_online_at', '>=', now()->subMinutes(15))
                 ->count();
         } catch (\Exception $e) {
-            return 0;
+            return 0; // nosemgrep: semgrep.rules.php-silent-exception-swallow -- upstream 2.4.7 debt, README-FORK
         }
     }
 

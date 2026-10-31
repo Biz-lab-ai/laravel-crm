@@ -69,7 +69,7 @@ class UpdateController extends Controller
                 ], [
                     'value' => $responseBody->version,
                 ]);
-            } catch (\Exception $e) {
+            } catch (\Exception $e) { // nosemgrep: semgrep.rules.php-empty-catch -- upstream 2.4.7 debt, README-FORK
                 //
             }
 
