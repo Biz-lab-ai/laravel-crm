@@ -4,8 +4,11 @@ namespace VentureDrake\LaravelCrm\Http\Helpers\SelectOptions;
 
 use App\User;
 use Carbon\Carbon;
+use IntlTimeZone;
 use Rinvex\Country\CountryLoader;
 use Rinvex\Country\CurrencyLoader;
+use Symfony\Component\Intl\Countries;
+use Symfony\Component\Intl\Currencies;
 use VentureDrake\LaravelCrm\Models\Timezone;
 
 function optionsFromModel($model, $null = true)
@@ -145,9 +148,14 @@ function countries()
      }*/
 
     foreach (CountryLoader::countries() as $country) {
+        if (! Countries::exists($country['iso_3166_1_alpha2'])) {
+            continue; // user-assigned codes (XK) have no ICU name in any locale
+        }
+
+        // The id stays the stored English name; the reader sees ICU's name in their locale.
         $items[] = [
             'id' => $country['name'],
-            'name' => $country['name'],
+            'name' => Countries::getName($country['iso_3166_1_alpha2'], app()->getLocale()),
         ];
     }
 
@@ -164,13 +172,27 @@ function currencies()
 
     // Allow for typo in package
     if (method_exists('Rinvex\Country\CurrencyLoader', 'curriencies')) {
-        foreach (CurrencyLoader::curriencies(true) as $currency) {
-            $items[$currency['iso_4217_code']] = $currency['iso_4217_name'].(' ('.$currency['iso_4217_code'].')');
-        }
+        $currencies = CurrencyLoader::curriencies(true);
     } else {
-        foreach (CurrencyLoader::currencies(true) as $currency) {
-            $items[$currency['iso_4217_code']] = $currency['iso_4217_name'].(' ('.$currency['iso_4217_code'].')');
+        $currencies = CurrencyLoader::currencies(true);
+    }
+
+    $items = [];
+    $locale = app()->getLocale();
+    // CLDR keeps official Latin acronyms (CFA, BEAC) and leaves rare currencies
+    // untranslated: a reader whose own currency name is not written in Latin
+    // letters is spared those entries rather than shown words they cannot read.
+    $latinReader = Currencies::exists('USD') && preg_match('/\p{Latin}/u', Currencies::getName('USD', $locale)) === 1;
+    foreach ($currencies as $currency) {
+        // The key stays the stored code; the reader sees ICU's name without it.
+        $code = $currency['iso_4217_code'];
+        $name = Currencies::exists($code)
+            ? Currencies::getName($code, $locale)
+            : $currency['iso_4217_name'];
+        if (! $latinReader && preg_match('/\p{Latin}/u', $name) === 1) {
+            continue;
         }
+        $items[$code] = $name;
     }
 
     return $items;
@@ -197,7 +219,9 @@ function timezones()
     $items[''] = '';
 
     foreach (Timezone::all() as $timezone) {
-        $items[$timezone->name] = $timezone->name.' - '.$timezone->diff_from_gtm;
+        // The key stays the stored identifier; the reader sees ICU's display name.
+        $items[$timezone->name] = IntlTimeZone::createTimeZone($timezone->name)
+            ->getDisplayName(false, IntlTimeZone::DISPLAY_LONG, app()->getLocale());
     }
 
     return $items;
@@ -205,28 +229,29 @@ function timezones()
 
 function dateFormats()
 {
-    $now = Carbon::now();
+    // The reader reads each format by its localized rendering, not its English one.
+    $now = Carbon::now()->locale(app()->getLocale());
 
     return [
-        'j F Y' => $now->format('j F Y'),
-        'Y-m-d' => $now->format('Y-m-d'),
-        'Y/m/d' => $now->format('Y/m/d'),
-        'm/d/Y' => $now->format('m/d/Y'),
-        'd/m/Y' => $now->format('d/m/Y'),
-        'F j, Y' => $now->format('F j, Y'),
-        'M j, Y' => $now->format('M j, Y'),
+        'j F Y' => $now->translatedFormat('j F Y'),
+        'Y-m-d' => $now->translatedFormat('Y-m-d'),
+        'Y/m/d' => $now->translatedFormat('Y/m/d'),
+        'm/d/Y' => $now->translatedFormat('m/d/Y'),
+        'd/m/Y' => $now->translatedFormat('d/m/Y'),
+        'F j, Y' => $now->translatedFormat('F j, Y'),
+        'M j, Y' => $now->translatedFormat('M j, Y'),
     ];
 }
 
 function timeFormats()
 {
-    $now = Carbon::now();
+    $now = Carbon::now()->locale(app()->getLocale());
 
     return [
-        'g:i a' => $now->format('g:i a'),
-        'g:i A' => $now->format('g:i A'),
-        'H:i' => $now->format('H:i'),
-        'H:i:s' => $now->format('H:i:s'),
+        'g:i a' => $now->translatedFormat('g:i a'),
+        'g:i A' => $now->translatedFormat('g:i A'),
+        'H:i' => $now->translatedFormat('H:i'),
+        'H:i:s' => $now->translatedFormat('H:i:s'),
     ];
 }
 

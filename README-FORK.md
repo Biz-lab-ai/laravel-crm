@@ -73,6 +73,14 @@
       first (plan CRM 2.1i, crm-2-1i-2) and falls back to the published `public/vendor/laravel-crm/css/document.css`
       as upstream: a host that does not publish the assets points the key at the package stylesheet. Goes into the
       upstream PR.
+  14. `src/Http/Helpers/SelectOptions.php` speaks the reader's locale (plan CRM 4.5, job crm-4-5): countries(),
+      currencies() and timezones() show ICU names (`Symfony\Component\Intl` / `IntlTimeZone`) in
+      `app()->getLocale()`, dateFormats() and timeFormats() render through Carbon `translatedFormat()`. The stored
+      keys stay upstream's (`id` keeps the English country name, the currency key stays the ISO code, the timezone
+      key stays the identifier, the date keys stay the PHP format strings), so saved settings never move. The
+      user-assigned country code XK (no ICU name in any locale) and, for a reader whose own currency name is not
+      Latin-script, currencies ICU leaves untranslated are skipped rather than shown as Latin words. Goes into the
+      upstream PR.
 - Do not patch anything else here. Behaviour changes live in packages/bizai/crm-desk (the wrapper shelf).
 - Upgrading: `git archive <new sha>` from upstream into this directory, re-apply the one-line
   constraint change and the version field, update this file, verify with `diff -r` against a fresh export.
@@ -87,3 +95,64 @@
   components), codeat3/blade-forkawesome, mallardduck/blade-boxicons, owenvoke/blade-fontawesome,
   rinvex/countries and kirschbaum-development/eloquent-power-joins. The wrapper shelf registers the ones
   the CRM needs, with Mary under a component prefix.
+
+## Exact file list against upstream 2.4.7
+
+Every path of `git diff 2.4.7..bizai-patches` besides this file (A added, M modified, D deleted). The items above give the reasons.
+
+```
+D AGENTS.md
+D CLAUDE.md
+M composer.json
+M config/laravel-crm.php
+D plan-filamentPlugin.prompt.md
+M resources/assets/libs/bootstrap-multiselect/bootstrap-multiselect.min.js
+M resources/v1/assets/libs/bootstrap-multiselect/bootstrap-multiselect.min.js
+M resources/views/deliveries/pdf.blade.php
+M resources/views/invoices/pdf.blade.php
+M resources/views/layouts/document.blade.php
+M resources/views/orders/pdf.blade.php
+M resources/views/pdfs/bold/delivery.blade.php
+M resources/views/pdfs/bold/invoice.blade.php
+M resources/views/pdfs/bold/order.blade.php
+M resources/views/pdfs/bold/purchase-order.blade.php
+M resources/views/pdfs/bold/quote.blade.php
+M resources/views/pdfs/compact/delivery.blade.php
+M resources/views/pdfs/compact/invoice.blade.php
+M resources/views/pdfs/compact/order.blade.php
+M resources/views/pdfs/compact/purchase-order.blade.php
+M resources/views/pdfs/compact/quote.blade.php
+M resources/views/pdfs/modern/delivery.blade.php
+M resources/views/pdfs/modern/invoice.blade.php
+M resources/views/pdfs/modern/order.blade.php
+M resources/views/pdfs/modern/purchase-order.blade.php
+M resources/views/pdfs/modern/quote.blade.php
+M resources/views/pdfs/professional/delivery.blade.php
+M resources/views/pdfs/professional/invoice.blade.php
+M resources/views/pdfs/professional/order.blade.php
+M resources/views/pdfs/professional/purchase-order.blade.php
+M resources/views/pdfs/professional/quote.blade.php
+M resources/views/purchase-orders/pdf.blade.php
+M resources/views/quotes/pdf.blade.php
+A src/Contracts/GeneratesNumbers.php
+A src/Contracts/ResolvesTeam.php
+M src/Http/Controllers/HostTeamController.php
+M src/Http/Controllers/Integrations/XeroController.php
+M src/Http/Controllers/LeadController.php
+M src/Http/Controllers/UpdateController.php
+M src/Http/Helpers/SelectOptions.php
+M src/Http/Middleware/Settings.php
+M src/LaravelCrmServiceProvider.php
+M src/Livewire/Settings/SettingEdit.php
+M src/Observers/ChatMessageObserver.php
+M src/Scopes/BelongsToTeamsScope.php
+M src/Services/ChatService.php
+M src/Services/InvoiceService.php
+M src/Services/NumberGeneratorService.php
+M src/Services/PurchaseOrderService.php
+A src/Support/CurrentUserTeamResolver.php
+M src/Support/PdfLogo.php
+A src/Support/TeamResolution.php
+M src/Traits/BelongsToTeams.php
+M src/Traits/HasEncryptableFields.php
+```
